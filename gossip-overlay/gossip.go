@@ -11,14 +11,16 @@ type Node struct {
 	Peer *gossip.Peer
 }
 
-func New() (*Node, error) {
-	// TODO: not implemented yet
+func NewNode() (*Node, error) {
+	// TODO: not implemented yet (Node::NewNode)
 
 	return nil, nil
 }
 
 func (node *Node) OpenStreamToTargetPeer(peerId mesh.PeerName) io.ReadWriteCloser {
 	log.Println("Opening a stream to", peerId)
+
+	// TODO: not implemented yet (Node::OpenStreamToTargetPeer)
 
 	//passId := peer_.ID
 	//stream, err := n.Host.NewStream(ctx, passId, constants.Protocol)

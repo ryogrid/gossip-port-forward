@@ -20,7 +20,7 @@ type Server struct {
 }
 
 func New(forward ServerForward) *Server {
-	node, err := gossip_overlay.New()
+	node, err := gossip_overlay.NewNode()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -29,6 +29,8 @@ func New(forward ServerForward) *Server {
 }
 
 func (s *Server) ListenAndSync() {
+	// TODO: not implemented yet (Server::ListenAndSync)
+
 	//s.peer.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
 	//	log.Println("Got a new stream!")
 	//

@@ -13,7 +13,7 @@ type Relay struct {
 }
 
 func New(gossipPort uint16) *Relay {
-	node, err := gossip_overlay.New()
+	node, err := gossip_overlay.NewNode()
 	if err != nil {
 		log.Fatalln(err)
 	}

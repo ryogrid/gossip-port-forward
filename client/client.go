@@ -21,7 +21,7 @@ type Client struct {
 }
 
 func New(listen ClientListen) *Client {
-	node, err := gossip_overlay.New()
+	node, err := gossip_overlay.NewNode()
 	if err != nil {
 		log.Fatalln(err)
 	}
