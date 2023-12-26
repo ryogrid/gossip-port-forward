@@ -44,7 +44,7 @@ Usage:
 
 Flags:
   -h, --help                 help for client
-  -c, --connect-to string    PeerId of the server libp2p node
+  -c, --connect-to string    PeerId of the server peer
   -l, --listen-port uint16   Listen server port (default 2222)
 ```
 
