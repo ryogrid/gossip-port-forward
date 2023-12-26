@@ -3,12 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
-	peer2 "github.com/libp2p/go-libp2p/core/peer"
+	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
 	"log"
 	"net"
 
-	"github.com/studiokaiji/libp2p-port-forward/libp2p"
-	"github.com/studiokaiji/libp2p-port-forward/util"
+	"github.com/ryogrid/gossip-port-forward/util"
 )
 
 type ClientListen struct {
@@ -17,12 +16,12 @@ type ClientListen struct {
 }
 
 type Client struct {
-	node   libp2p.Node
+	node   gossip_overlay.Node
 	listen ClientListen
 }
 
 func New(addr string, port uint16, listen ClientListen) *Client {
-	node, err := libp2p.New(addr, port)
+	node, err := gossip_overlay.New(addr, port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,8 +43,6 @@ func (c *Client) ConnectAndSync(ctx context.Context, targetPeerId peer2.ID) {
 
 	log.Println("Created listen server")
 
-	peer := c.node.DiscoveryPeer(ctx, targetPeerId)
-
 	log.Println("You can connect with", tcpLn.Addr().String())
 
 	go func() {
@@ -55,7 +52,7 @@ func (c *Client) ConnectAndSync(ctx context.Context, targetPeerId peer2.ID) {
 				log.Fatalln(err2)
 			}
 
-			stream := c.node.OpenStreamToTargetPeer(ctx, peer)
+			stream := c.node.OpenStreamToTargetPeer(peerId)
 
 			go util.Sync(tcpConn, stream)
 		}

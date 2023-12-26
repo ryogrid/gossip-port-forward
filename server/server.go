@@ -1,16 +1,10 @@
 package server
 
 import (
-	"context"
 	"fmt"
+	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
 	"log"
 	"net"
-
-	network2 "github.com/libp2p/go-libp2p/core/network"
-	peer2 "github.com/libp2p/go-libp2p/core/peer"
-	"github.com/studiokaiji/libp2p-port-forward/constants"
-	"github.com/studiokaiji/libp2p-port-forward/libp2p"
-	"github.com/studiokaiji/libp2p-port-forward/util"
 )
 
 type ServerForward struct {
@@ -19,13 +13,13 @@ type ServerForward struct {
 }
 
 type Server struct {
-	node    libp2p.Node
+	peer    gossip_overlay.Node
 	forward ServerForward
 	ID      peer2.ID
 }
 
 func New(addr string, port uint16, forward ServerForward) *Server {
-	node, err := libp2p.New(addr, port)
+	node, err := gossip_overlay.New(addr, port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -34,25 +28,25 @@ func New(addr string, port uint16, forward ServerForward) *Server {
 }
 
 func (s *Server) ListenAndSync() {
-	ctx := context.Background()
+	//ctx := context.Background()
 
 	log.Println("Announcing ourselves...")
-	s.node.Advertise(ctx)
+	//s.peer.Advertise(ctx)
 	log.Println("Successfully announced.")
 
-	s.node.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
-		log.Println("Got a new stream!")
-
-		log.Println("Connecting forward server...")
-
-		tcpConn, err := s.dialForwardServer()
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		log.Println("Connected forward server.")
-		go util.Sync(tcpConn, stream)
-	})
+	//s.peer.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
+	//	log.Println("Got a new stream!")
+	//
+	//	log.Println("Connecting forward server...")
+	//
+	//	tcpConn, err := s.dialForwardServer()
+	//	if err != nil {
+	//		log.Fatalln(err)
+	//	}
+	//
+	//	log.Println("Connected forward server.")
+	//	go util.Sync(tcpConn, stream)
+	//})
 
 	log.Println("Waiting for client to connect.\nYour PeerId is", s.ID.Pretty())
 }

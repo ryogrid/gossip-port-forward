@@ -3,14 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
-	peer2 "github.com/libp2p/go-libp2p/core/peer"
 	"log"
 	"os"
 
+	"github.com/ryogrid/gossip-port-forward/client"
+	"github.com/ryogrid/gossip-port-forward/server"
+	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/spf13/cobra"
-	"github.com/studiokaiji/libp2p-port-forward/client"
-	"github.com/studiokaiji/libp2p-port-forward/server"
-	"github.com/studiokaiji/libp2p-port-forward/util"
 )
 
 var libp2pPort uint16
