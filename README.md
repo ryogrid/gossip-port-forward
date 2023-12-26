@@ -14,9 +14,10 @@ Usage:
   gossip-port-forward [command]
 
 Available Commands:
-  client      Startup client node.
   help        Help about any command
-  server      Startup server node.
+  client      Startup client peer.  
+  server      Startup server peer.
+  relay       Startup relay peer.
 
 Flags:
   -h, --help   help for gossip-port-forward
