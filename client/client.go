@@ -20,8 +20,8 @@ type Client struct {
 	listen ClientListen
 }
 
-func New(addr string, port uint16, listen ClientListen) *Client {
-	node, err := gossip_overlay.New(addr, port)
+func New(listen ClientListen) *Client {
+	node, err := gossip_overlay.New()
 	if err != nil {
 		log.Fatalln(err)
 	}

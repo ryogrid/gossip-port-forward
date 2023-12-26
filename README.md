@@ -32,7 +32,6 @@ Flags:
   -h, --help                     help for server
   -a, --forward-address string   Address to forward (default "localhost")
   -f, --forward-port uint16      Port to forward (default 22)
-  -p, --gossip-port uint16       gossip-overlay peer port (default 60001)
 ```
 
 ### Client
@@ -44,6 +43,16 @@ Usage:
 Flags:
   -h, --help                 help for client
   -c, --connect-to string    PeerId of the server libp2p node
-  -p, --gossip-port uint16   gossip-overlay peer port (default 60001)
   -l, --listen-port uint16   Listen server port (default 2222)
+```
+
+### Relay
+
+```
+Usage:
+  gossip-port-forward relay [flags]
+
+Flags:
+  -h, --help                 help for relay
+  -p, --gossip-port uint16   Relay listen port (default 9999)
 ```

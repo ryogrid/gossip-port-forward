@@ -19,8 +19,8 @@ type Server struct {
 	ID      mesh.PeerName
 }
 
-func New(addr string, port uint16, forward ServerForward) *Server {
-	node, err := gossip_overlay.New(addr, port)
+func New(forward ServerForward) *Server {
+	node, err := gossip_overlay.New()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -29,12 +29,6 @@ func New(addr string, port uint16, forward ServerForward) *Server {
 }
 
 func (s *Server) ListenAndSync() {
-	//ctx := context.Background()
-
-	log.Println("Announcing ourselves...")
-	//s.peer.Advertise(ctx)
-	log.Println("Successfully announced.")
-
 	//s.peer.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
 	//	log.Println("Got a new stream!")
 	//

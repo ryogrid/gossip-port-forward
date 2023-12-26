@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ryogrid/gossip-port-forward/relay"
 	"github.com/weaveworks/mesh"
 	"os"
 	"strconv"
@@ -12,29 +13,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var libp2pPort uint16
+var gossipPort uint16
 var listenPort uint16
 var forwardPort uint16
 var forwardAddress string
 var connectTo string
 
 var rootCmd = &cobra.Command{
-	Use: "libp2p-port-forward",
+	Use: "gossip-port-forward",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("libp2p-port-forward v0.1.0")
+		fmt.Println("gossip-port-forward v0.1.0")
 	},
 }
 
 var clientCmd = &cobra.Command{
 	Use:   "client",
-	Short: "Startup client node.",
+	Short: "Startup client peer.",
 	Run: func(cmd *cobra.Command, args []string) {
 		listen := client.ClientListen{
 			Addr: "127.0.0.1",
 			Port: listenPort,
 		}
 
-		c := client.New("127.0.0.1", libp2pPort, listen)
+		c := client.New(listen)
 
 		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
@@ -55,8 +56,18 @@ var serverCmd = &cobra.Command{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New("0.0.0.0", libp2pPort, forward)
+		s := server.New(forward)
 		s.ListenAndSync()
+
+		util.OSInterrupt()
+	},
+}
+
+var relayCmd = &cobra.Command{
+	Use:   "relay",
+	Short: "Startup relay peer.",
+	Run: func(cmd *cobra.Command, args []string) {
+		_ = relay.New(gossipPort)
 
 		util.OSInterrupt()
 	},
@@ -79,19 +90,12 @@ func init() {
 		2222,
 		"Listen server port",
 	)
-	clientCmd.Flags().Uint16VarP(
-		&libp2pPort,
-		"libp2p-port",
-		"p",
-		60001,
-		"Libp2p client node port",
-	)
 	clientCmd.Flags().StringVarP(
 		&connectTo,
 		"connect-to",
 		"c",
 		"",
-		"PeerId of the server libp2p node",
+		"PeerId of the server gossip peer",
 	)
 	clientCmd.MarkFlagRequired("connect-to")
 
@@ -102,13 +106,6 @@ func init() {
 		22,
 		"Port to forward",
 	)
-	serverCmd.Flags().Uint16VarP(
-		&libp2pPort,
-		"libp2p-port",
-		"p",
-		60001,
-		"Libp2p server node port",
-	)
 	serverCmd.Flags().StringVarP(
 		&forwardAddress,
 		"forward-address",
@@ -117,6 +114,15 @@ func init() {
 		"Address to forward",
 	)
 
+	clientCmd.Flags().Uint16VarP(
+		&gossipPort,
+		"gossip-port",
+		"p",
+		9999,
+		"gossip relay peer port",
+	)
+
 	rootCmd.AddCommand(clientCmd)
 	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(relayCmd)
 }

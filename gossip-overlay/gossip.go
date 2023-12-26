@@ -11,20 +11,8 @@ type Node struct {
 	Peer *gossip.Peer
 }
 
-func New(addr string, port uint16) (*Node, error) {
-	//strAddr := fmt.Sprintf("/ip4/%s/tcp/%d", addr, port)
-	//listenAddr := libp2p.ListenAddrStrings(strAddr)
-	//
-	//var DefaultPeerstore libp2p.Option = func(cfg *libp2p.Config) error {
-	//	ps, err := pstoremem.NewPeerstore()
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	return cfg.Apply(libp2p.Peerstore(ps))
-	//}
-	//
-	//node, err := libp2p.New(DefaultPeerstore, listenAddr)
+func New() (*Node, error) {
+	// TODO: not implemented yet
 
 	return nil, nil
 }
