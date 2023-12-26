@@ -20,13 +20,13 @@ type Client struct {
 	listen ClientListen
 }
 
-func New(listen ClientListen) *Client {
-	node, err := gossip_overlay.NewNode()
+func New(destPeerId uint16, clientListen ClientListen, gossipListenPort uint16) *Client {
+	node, err := gossip_overlay.NewNode(&destPeerId, gossipListenPort)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return &Client{node, listen}
+	return &Client{node, clientListen}
 }
 
 func (c *Client) ConnectAndSync(targetPeerId mesh.PeerName) {

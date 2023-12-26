@@ -19,8 +19,8 @@ type Server struct {
 	ID      mesh.PeerName
 }
 
-func New(forward ServerForward) *Server {
-	node, err := gossip_overlay.NewNode()
+func New(forward ServerForward, gossipListenPort uint16) *Server {
+	node, err := gossip_overlay.NewNode(nil, gossipListenPort)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -45,7 +45,7 @@ func (s *Server) ListenAndSync() {
 	//	go util.Sync(tcpConn, stream)
 	//})
 
-	log.Println("Waiting for client to connect.\nYour PeerId is", s.ID)
+	log.Printf("Waiting for client to connect.\nYour PeerId is %d\n", s.ID)
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {

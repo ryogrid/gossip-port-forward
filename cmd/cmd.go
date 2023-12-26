@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var gossipPort uint16
+var gossipPort uint16 = 9999
 var listenPort uint16
 var forwardPort uint16
 var forwardAddress string
@@ -35,7 +35,11 @@ var clientCmd = &cobra.Command{
 			Port: listenPort,
 		}
 
-		c := client.New(listen)
+		destPeerId, err := strconv.Atoi(connectTo)
+		if err != nil {
+			panic("Could not parse connect-to")
+		}
+		c := client.New(uint16(destPeerId), listen, gossipPort)
 
 		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
@@ -56,7 +60,7 @@ var serverCmd = &cobra.Command{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New(forward)
+		s := server.New(forward, gossipPort)
 		s.ListenAndSync()
 
 		util.OSInterrupt()
@@ -114,7 +118,7 @@ func init() {
 		"Address to forward",
 	)
 
-	clientCmd.Flags().Uint16VarP(
+	relayCmd.Flags().Uint16VarP(
 		&gossipPort,
 		"gossip-port",
 		"p",

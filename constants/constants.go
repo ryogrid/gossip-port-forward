@@ -1,4 +1,3 @@
 package constants
 
-var BootstrapPeerHost = "ryogrid.net"
-var BootstrapPeerPort uint16 = 9999
+var BootstrapPeer = "ryogrid.net:9999"
