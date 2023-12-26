@@ -1,6 +1,7 @@
 # gossip-port-forward
 
-gossip-port-forward command-line utility to transfer port between two hosts via different network / subnet peer-to-peer using gossip-overlay lib.
+- gossip-port-forward command-line utility to transfer port between two hosts via different network / subnet peer-to-peer using gossip-overlay lib.
+  - gossip-port-forward is fork of [studiokaiji/libp2p-port-forward](https://github.com/studiokaiji/libp2p-port-forward)
 
 ## Installation
 
