@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"log"
+	"github.com/weaveworks/mesh"
 	"os"
+	"strconv"
 
 	"github.com/ryogrid/gossip-port-forward/client"
 	"github.com/ryogrid/gossip-port-forward/server"
@@ -29,8 +29,6 @@ var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "Startup client node.",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-
 		listen := client.ClientListen{
 			Addr: "127.0.0.1",
 			Port: listenPort,
@@ -38,13 +36,12 @@ var clientCmd = &cobra.Command{
 
 		c := client.New("127.0.0.1", libp2pPort, listen)
 
-		//pid, err := peer.IDB58Decode(connectTo)
-		pid, err := peer2.Decode(connectTo)
+		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
-			log.Fatalln(err)
+			panic("Could not parse Destname")
 		}
 
-		c.ConnectAndSync(ctx, pid)
+		c.ConnectAndSync(mesh.PeerName(destNameNum))
 
 		util.OSInterrupt()
 	},

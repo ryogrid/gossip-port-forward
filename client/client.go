@@ -1,9 +1,9 @@
 package client
 
 import (
-	"context"
 	"fmt"
 	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
+	"github.com/weaveworks/mesh"
 	"log"
 	"net"
 
@@ -16,7 +16,7 @@ type ClientListen struct {
 }
 
 type Client struct {
-	node   gossip_overlay.Node
+	node   *gossip_overlay.Node
 	listen ClientListen
 }
 
@@ -29,7 +29,7 @@ func New(addr string, port uint16, listen ClientListen) *Client {
 	return &Client{node, listen}
 }
 
-func (c *Client) ConnectAndSync(ctx context.Context, targetPeerId peer2.ID) {
+func (c *Client) ConnectAndSync(targetPeerId mesh.PeerName) {
 	log.Println("Creating listen server...")
 	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", c.listen.Addr, c.listen.Port))
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *Client) ConnectAndSync(ctx context.Context, targetPeerId peer2.ID) {
 				log.Fatalln(err2)
 			}
 
-			stream := c.node.OpenStreamToTargetPeer(peerId)
+			stream := c.node.OpenStreamToTargetPeer(targetPeerId)
 
 			go util.Sync(tcpConn, stream)
 		}

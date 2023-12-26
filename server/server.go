@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
+	"github.com/weaveworks/mesh"
 	"log"
 	"net"
 )
@@ -13,9 +14,9 @@ type ServerForward struct {
 }
 
 type Server struct {
-	peer    gossip_overlay.Node
+	peer    *gossip_overlay.Node
 	forward ServerForward
-	ID      peer2.ID
+	ID      mesh.PeerName
 }
 
 func New(addr string, port uint16, forward ServerForward) *Server {
@@ -24,7 +25,7 @@ func New(addr string, port uint16, forward ServerForward) *Server {
 		log.Fatalln(err)
 	}
 
-	return &Server{node, forward, node.Host.ID()}
+	return &Server{node, forward, node.Peer.GossipDataMan.Self}
 }
 
 func (s *Server) ListenAndSync() {
@@ -48,7 +49,7 @@ func (s *Server) ListenAndSync() {
 	//	go util.Sync(tcpConn, stream)
 	//})
 
-	log.Println("Waiting for client to connect.\nYour PeerId is", s.ID.Pretty())
+	log.Println("Waiting for client to connect.\nYour PeerId is", s.ID)
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {
