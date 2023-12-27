@@ -2,10 +2,16 @@ package server
 
 import (
 	"fmt"
+	"github.com/pion/datachannel"
+	"github.com/ryogrid/gossip-overlay/overlay"
 	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
+	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/weaveworks/mesh"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type ServerForward struct {
@@ -14,7 +20,7 @@ type ServerForward struct {
 }
 
 type Server struct {
-	peer    *gossip_overlay.Node
+	node    *gossip_overlay.Node
 	forward ServerForward
 	ID      mesh.PeerName
 }
@@ -29,9 +35,20 @@ func New(forward ServerForward, gossipListenPort uint16) *Server {
 }
 
 func (s *Server) ListenAndSync() {
-	// TODO: not implemented yet (Server::ListenAndSync)
+	defer func() {
+		gossip_overlay.LoggerObj.Printf("mesh router stopping")
+		s.node.Peer.Router.Stop()
+	}()
 
-	//s.peer.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
+	errs := make(chan error)
+
+	go func() {
+		c := make(chan os.Signal)
+		signal.Notify(c, syscall.SIGINT)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
+
+	//s.node.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
 	//	log.Println("Got a new stream!")
 	//
 	//	log.Println("Connecting forward server...")
@@ -45,7 +62,37 @@ func (s *Server) ListenAndSync() {
 	//	go util.Sync(tcpConn, stream)
 	//})
 
+	go func() {
+		oserv, err := overlay.NewOverlayServer(s.node.Peer, s.node.Peer.GossipMM)
+		if err != nil {
+			panic(err)
+		}
+
+		for {
+			channel, remotePeerName, streamID, err2 := oserv.Accept()
+			if err2 != nil {
+				panic(err2)
+			}
+			fmt.Println("accepted:", remotePeerName, streamID)
+
+			go func(channel_ *datachannel.DataChannel) {
+				log.Println("Got a new stream!")
+
+				log.Println("Connecting forward server...")
+
+				tcpConn, err3 := s.dialForwardServer()
+				if err3 != nil {
+					log.Fatalln(err3)
+				}
+
+				log.Println("Connected forward server.")
+				util.Sync(tcpConn, channel_)
+			}(channel)
+		}
+	}()
+
 	log.Printf("Waiting for client to connect.\nYour PeerId is %d\n", s.ID)
+	gossip_overlay.LoggerObj.Print(<-errs)
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {

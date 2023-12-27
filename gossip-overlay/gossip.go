@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-var logger *log.Logger
+var LoggerObj *log.Logger
 
 type Node struct {
 	Peer *gossip.Peer
@@ -35,7 +35,7 @@ func NewNode(destPeerId *uint16, gossipListenPort uint16) (*Node, error) {
 		TrustedSubnets:     []*net.IPNet{},
 	}
 
-	logger = log.New(os.Stderr, "gossip> ", log.LstdFlags)
+	LoggerObj = log.New(os.Stderr, "gossip> ", log.LstdFlags)
 	emptyStr := ""
 	meshListen := "local"
 	var destPeerId_ uint64 = math.MaxUint64
@@ -44,7 +44,7 @@ func NewNode(destPeerId *uint16, gossipListenPort uint16) (*Node, error) {
 	}
 	peers := &util.Stringset{}
 	peers.Set(constants.BootstrapPeer)
-	p := gossip.NewPeer(name, logger, mesh.PeerName(destPeerId_), &emptyStr, &emptyStr, &meshListen, &meshConf, peers)
+	p := gossip.NewPeer(name, LoggerObj, mesh.PeerName(destPeerId_), &emptyStr, &emptyStr, &meshListen, &meshConf, peers)
 
 	return &Node{p}, nil
 }
