@@ -12,6 +12,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"time"
 )
 
 var LoggerObj *log.Logger
@@ -20,12 +21,13 @@ type Node struct {
 	Peer *gossip.Peer
 }
 
-func NewNode(destPeerId *uint16, gossipListenPort uint16) (*Node, error) {
-	nicAddr := util.MustHardwareAddr()
-	name, err := mesh.PeerNameFromString(nicAddr)
-	if err != nil {
-		panic("Failed to get PeerName from NIC address")
-	}
+func NewNode(destPeerId *uint64, gossipListenPort uint16) (*Node, error) {
+	//nicAddr := util.MustHardwareAddr()
+	//name, err := mesh.PeerNameFromString(nicAddr)
+	//if err != nil {
+	//	panic("Failed to get PeerName from NIC address")
+	//}
+	name := mesh.PeerName(time.Now().Unix())
 
 	meshConf := mesh.Config{
 		Host:               "0.0.0.0",
@@ -42,7 +44,7 @@ func NewNode(destPeerId *uint16, gossipListenPort uint16) (*Node, error) {
 	meshListen := "local"
 	var destPeerId_ uint64 = math.MaxUint64
 	if destPeerId != nil {
-		destPeerId_ = uint64(*destPeerId)
+		destPeerId_ = *destPeerId
 	}
 	peers := &util.Stringset{}
 	peers.Set(constants.BootstrapPeer)

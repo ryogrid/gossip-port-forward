@@ -20,7 +20,7 @@ type Client struct {
 	listen ClientListen
 }
 
-func New(destPeerId uint16, clientListen ClientListen, gossipListenPort uint16) *Client {
+func New(destPeerId uint64, clientListen ClientListen, gossipListenPort uint16) *Client {
 	node, err := gossip_overlay.NewNode(&destPeerId, gossipListenPort)
 	if err != nil {
 		log.Fatalln(err)

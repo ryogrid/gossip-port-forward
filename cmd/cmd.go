@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ryogrid/gossip-overlay/overlay_setting"
 	"github.com/ryogrid/gossip-port-forward/relay"
 	"github.com/weaveworks/mesh"
 	"os"
@@ -35,11 +36,11 @@ var clientCmd = &cobra.Command{
 			Port: listenPort,
 		}
 
-		destPeerId, err := strconv.Atoi(connectTo)
+		destPeerId, err := strconv.ParseUint(connectTo, 10, 64) //Atoi(connectTo)
 		if err != nil {
 			panic("Could not parse connect-to")
 		}
-		c := client.New(uint16(destPeerId), listen, gossipPort)
+		c := client.New(destPeerId, listen, gossipPort-1)
 
 		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
@@ -85,6 +86,8 @@ func Execute() {
 }
 
 func init() {
+	overlay_setting.OVERLAY_DEBUG = true
+
 	cobra.OnInitialize()
 
 	clientCmd.Flags().Uint16VarP(
