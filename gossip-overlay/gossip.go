@@ -1,7 +1,9 @@
 package gossip_overlay
 
 import (
+	"fmt"
 	"github.com/ryogrid/gossip-overlay/gossip"
+	"github.com/ryogrid/gossip-overlay/overlay"
 	"github.com/ryogrid/gossip-overlay/util"
 	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/weaveworks/mesh"
@@ -50,9 +52,18 @@ func NewNode(destPeerId *uint16, gossipListenPort uint16) (*Node, error) {
 }
 
 func (node *Node) OpenStreamToTargetPeer(peerId mesh.PeerName) io.ReadWriteCloser {
-	log.Println("Opening a stream to", peerId)
+	LoggerObj.Println(fmt.Sprintf("Opening a stream to %d", peerId))
 
-	// TODO: not implemented yet (Node::OpenStreamToTargetPeer)
+	oc, err := overlay.NewOverlayClient(node.Peer, node.Peer.Destname, node.Peer.GossipMM)
+	if err != nil {
+		panic(err)
+	}
+
+	channel, streamID, err2 := oc.OpenChannel(math.MaxUint16)
+	if err2 != nil {
+		panic(err2)
+	}
+	fmt.Println(fmt.Sprintf("opened: %d", streamID))
 
 	//passId := peer_.ID
 	//stream, err := n.Host.NewStream(ctx, passId, constants.Protocol)
@@ -60,7 +71,6 @@ func (node *Node) OpenStreamToTargetPeer(peerId mesh.PeerName) io.ReadWriteClose
 	//	log.Fatalln(err)
 	//}
 	//log.Println("Opened a stream to", peer_.ID)
-
 	//return stream
-	return nil
+	return channel
 }
