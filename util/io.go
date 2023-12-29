@@ -19,6 +19,7 @@ func Sync(source1 io.ReadWriteCloser, source2 io.ReadWriteCloser) {
 	_, err := io.Copy(source1, source2)
 	if err != nil {
 		log.Println(err)
+		closeAll(source1, source2)
 		return
 	}
 }

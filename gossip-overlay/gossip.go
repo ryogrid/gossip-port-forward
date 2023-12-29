@@ -67,12 +67,5 @@ func (node *Node) OpenStreamToTargetPeer(peerId mesh.PeerName) io.ReadWriteClose
 	}
 	fmt.Println(fmt.Sprintf("opened: %d", streamID))
 
-	//passId := peer_.ID
-	//stream, err := n.Host.NewStream(ctx, passId, constants.Protocol)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//log.Println("Opened a stream to", peer_.ID)
-	//return stream
 	return channel
 }

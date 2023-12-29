@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"github.com/pion/datachannel"
 	"github.com/ryogrid/gossip-overlay/overlay"
 	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
 	"github.com/ryogrid/gossip-port-forward/util"
@@ -48,20 +47,6 @@ func (s *Server) ListenAndSync() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 
-	//s.node.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
-	//	log.Println("Got a new stream!")
-	//
-	//	log.Println("Connecting forward server...")
-	//
-	//	tcpConn, err := s.dialForwardServer()
-	//	if err != nil {
-	//		log.Fatalln(err)
-	//	}
-	//
-	//	log.Println("Connected forward server.")
-	//	go util.Sync(tcpConn, stream)
-	//})
-
 	go func() {
 		oserv, err := overlay.NewOverlayServer(s.node.Peer, s.node.Peer.GossipMM)
 		if err != nil {
@@ -75,7 +60,7 @@ func (s *Server) ListenAndSync() {
 			}
 			fmt.Println("accepted:", remotePeerName, streamID)
 
-			go func(channel_ *datachannel.DataChannel) {
+			go func(channel_ *overlay.OverlayStream) {
 				log.Println("Got a new stream!")
 
 				log.Println("Connecting forward server...")
