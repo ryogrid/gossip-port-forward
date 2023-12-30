@@ -58,6 +58,6 @@ Flags:
   -h, --help                 help for relay
   -p, --gossip-port uint16   Relay listen port (default 9999)
 ```
-- Now, relay node is running at ryogrid.net:9999 and its address is hard coded as bootstrap node for demonstration purpose
-- So, you don't need to launch relay node by myself though data transfer is done without encryption
+- **Now, relay node is running at ryogrid.net:9999 and its address is hard coded as bootstrap node for demonstration**
+- **So, you don't need to launch relay node by myself, though data transfer is done without encryption**
 - If you want use self relay node, you should replace hard coded relay node address and run the relay node at your machine which is accessible from the Internet
