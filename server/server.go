@@ -8,9 +8,6 @@ import (
 	"github.com/weaveworks/mesh"
 	"log"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type ServerForward struct {
@@ -39,13 +36,13 @@ func (s *Server) ListenAndSync() {
 		s.node.Peer.Router.Stop()
 	}()
 
-	errs := make(chan error)
-
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, syscall.SIGINT)
-		errs <- fmt.Errorf("%s", <-c)
-	}()
+	//errs := make(chan error)
+	//
+	//go func() {
+	//	c := make(chan os.Signal)
+	//	signal.Notify(c, syscall.SIGINT)
+	//	errs <- fmt.Errorf("%s", <-c)
+	//}()
 
 	go func() {
 		oserv, err := overlay.NewOverlayServer(s.node.Peer, s.node.Peer.GossipMM)
@@ -77,7 +74,7 @@ func (s *Server) ListenAndSync() {
 	}()
 
 	log.Printf("Waiting for client to connect.\nYour PeerId is %d\n", s.ID)
-	gossip_overlay.LoggerObj.Print(<-errs)
+	//gossip_overlay.LoggerObj.Print(<-errs)
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {
