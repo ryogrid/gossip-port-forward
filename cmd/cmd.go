@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ryogrid/gossip-overlay/overlay_setting"
 	"github.com/ryogrid/gossip-port-forward/relay"
 	"github.com/weaveworks/mesh"
 	"os"
@@ -85,7 +86,7 @@ func Execute() {
 }
 
 func init() {
-	//overlay_setting.OVERLAY_DEBUG = true
+	overlay_setting.OVERLAY_DEBUG = true
 
 	cobra.OnInitialize()
 
