@@ -3,9 +3,9 @@
 - gossip-port-forward is command-line utility to transfer port between two hosts via different network / subnet peer-to-peer using gossip-overlay lib
   - gossip-port-forward is a fork of [studiokaiji/libp2p-port-forward](https://github.com/studiokaiji/libp2p-port-forward)
   - developed as simple use case example of [gosdip-overlay lib](https://github.com/ryogrid/gossip-overlay)
-## Installation
+## Build
 
-WORK IN PROGRESS....
+- $ go build ./gossip-port-forward.go
 
 ## Usage
 
@@ -44,7 +44,7 @@ Usage:
 
 Flags:
   -h, --help                 help for client
-  -c, --connect-to string    PeerId of the server peer
+  -c, --connect-to string    PeerId of the server peer (you can know server PeerId at its lauching)
   -l, --listen-port uint16   Listen server port (default 2222)
 ```
 
