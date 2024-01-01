@@ -2,7 +2,7 @@
 
 - gossip-port-forward is command-line utility to transfer port between two hosts via different network / subnet peer-to-peer using gossip-overlay lib
   - gossip-port-forward is a fork of [studiokaiji/libp2p-port-forward](https://github.com/studiokaiji/libp2p-port-forward)
-
+  - developed as simple use case example of [gosdip-overlay lib](https://github.com/ryogrid/gossip-overlay)
 ## Installation
 
 WORK IN PROGRESS....
@@ -58,3 +58,6 @@ Flags:
   -h, --help                 help for relay
   -p, --gossip-port uint16   Relay listen port (default 9999)
 ```
+- **Now, relay node is running at ryogrid.net:9999 and its address is hard coded as bootstrap node for demonstration**
+- **So, you don't need to launch relay node by myself, though data transfer is done without encryption**
+- If you want use self relay node, you should replace hard coded relay node address and run the relay node at your machine which is accessible from the Internet
