@@ -2,7 +2,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
+	"github.com/ryogrid/gossip-overlay/overlay"
+	util2 "github.com/ryogrid/gossip-overlay/util"
+	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/weaveworks/mesh"
 	"log"
 	"net"
@@ -16,17 +18,20 @@ type ClientListen struct {
 }
 
 type Client struct {
-	node   *gossip_overlay.Node
+	peer   *overlay.OverlayPeer
 	listen ClientListen
 }
 
 func New(destPeerId uint64, clientListen ClientListen, gossipListenPort uint16) *Client {
-	node, err := gossip_overlay.NewNode(&destPeerId, gossipListenPort)
+	host := "0.0.0.0"
+	peers := &util2.Stringset{}
+	peers.Set(constants.BootstrapPeer)
+	peer, err := overlay.NewOverlayPeer(&host, int(gossipListenPort), peers)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return &Client{node, clientListen}
+	return &Client{peer, clientListen}
 }
 
 func (c *Client) ConnectAndSync(targetPeerId mesh.PeerName) {
@@ -52,7 +57,7 @@ func (c *Client) ConnectAndSync(targetPeerId mesh.PeerName) {
 				log.Fatalln(err2)
 			}
 
-			stream := c.node.OpenStreamToTargetPeer(targetPeerId)
+			stream := c.peer.OpenStreamToTargetPeer(targetPeerId, "")
 
 			go util.Sync(tcpConn, stream)
 		}

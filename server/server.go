@@ -3,7 +3,8 @@ package server
 import (
 	"fmt"
 	"github.com/ryogrid/gossip-overlay/overlay"
-	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
+	util2 "github.com/ryogrid/gossip-overlay/util"
+	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/weaveworks/mesh"
 	"log"
@@ -16,36 +17,32 @@ type ServerForward struct {
 }
 
 type Server struct {
-	node    *gossip_overlay.Node
+	peer    *overlay.OverlayPeer
 	forward ServerForward
 	ID      mesh.PeerName
 }
 
 func New(forward ServerForward, gossipListenPort uint16) *Server {
-	node, err := gossip_overlay.NewNode(nil, gossipListenPort)
+	host := "0.0.0.0"
+	peers := &util2.Stringset{}
+	peers.Set(constants.BootstrapPeer)
+	peer, err := overlay.NewOverlayPeer(&host, int(gossipListenPort), peers)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return &Server{node, forward, node.Peer.GossipDataMan.Self}
+	return &Server{peer, forward, peer.Peer.GossipDataMan.Self}
 }
 
 func (s *Server) ListenAndSync() {
 	defer func() {
-		gossip_overlay.LoggerObj.Printf("mesh router stopping")
-		s.node.Peer.Router.Stop()
+		fmt.Println("mesh router stopping")
+		//s.peer.Peer.Router.Stop()
+		s.peer.Peer.Stop()
 	}()
 
-	//errs := make(chan error)
-	//
-	//go func() {
-	//	c := make(chan os.Signal)
-	//	signal.Notify(c, syscall.SIGINT)
-	//	errs <- fmt.Errorf("%s", <-c)
-	//}()
-
 	go func() {
-		oserv, err := overlay.NewOverlayServer(s.node.Peer, s.node.Peer.GossipMM)
+		oserv, err := overlay.NewOverlayServer(s.peer.Peer, s.peer.Peer.GossipMM)
 		if err != nil {
 			panic(err)
 		}
