@@ -18,7 +18,9 @@ Available Commands:
   help        Help about any command
   client      Startup client peer.  
   server      Startup server peer.
+  both        Startup client and server peer.  
   relay       Startup relay peer.
+
 
 Flags:
   -h, --help   help for gossip-port-forward
@@ -46,6 +48,21 @@ Flags:
   -h, --help                 help for client
   -c, --connect-to string    PeerId of the server peer
   -l, --listen-port uint16   Listen server port (default 2222)
+```
+
+### Client/Server (both)
+
+```
+Usage:
+  gossip-port-forward both [flags]
+
+Flags:
+  -h, --help                     help for both
+  -a, --forward-address string   Address to forward (default "localhost")  
+  -l, --listen-port uint16       Listen server port (default 2222)
+  -f, --forward-port uint16      Port to forward (default 22)
+  -c, --connect-to string        PeerId of the destination peer (required)
+  -s, --self-peer-id string      PeerId of the self peer (required)  
 ```
 
 ### Relay

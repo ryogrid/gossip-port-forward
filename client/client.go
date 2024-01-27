@@ -3,8 +3,6 @@ package client
 import (
 	"fmt"
 	"github.com/ryogrid/gossip-overlay/overlay"
-	util2 "github.com/ryogrid/gossip-overlay/util"
-	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/weaveworks/mesh"
 	"log"
 	"net"
@@ -22,15 +20,8 @@ type Client struct {
 	listen ClientListen
 }
 
-func New(destPeerId uint64, clientListen ClientListen, gossipListenPort uint16) *Client {
-	host := "0.0.0.0"
-	peers := &util2.Stringset{}
-	peers.Set(constants.BootstrapPeer)
-	peer, err := overlay.NewOverlayPeer(&host, int(gossipListenPort), peers)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+// func New(destPeerId uint64, clientListen ClientListen, gossipListenPort uint16) *Client {
+func New(peer *overlay.OverlayPeer, clientListen ClientListen) *Client {
 	return &Client{peer, clientListen}
 }
 
