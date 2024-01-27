@@ -3,8 +3,6 @@ package server
 import (
 	"fmt"
 	"github.com/ryogrid/gossip-overlay/overlay"
-	util2 "github.com/ryogrid/gossip-overlay/util"
-	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/weaveworks/mesh"
 	"log"
@@ -22,15 +20,7 @@ type Server struct {
 	ID      mesh.PeerName
 }
 
-func New(forward ServerForward, gossipListenPort uint16) *Server {
-	host := "0.0.0.0"
-	peers := &util2.Stringset{}
-	peers.Set(constants.BootstrapPeer)
-	peer, err := overlay.NewOverlayPeer(&host, int(gossipListenPort), peers)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+func New(peer *overlay.OverlayPeer, forward ServerForward) *Server {
 	return &Server{peer, forward, peer.Peer.GossipDataMan.Self}
 }
 

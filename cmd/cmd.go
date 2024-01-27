@@ -73,7 +73,15 @@ var serverCmd = &cobra.Command{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New(forward, gossipPort)
+
+		peers := &util2.Stringset{}
+		peers.Set(constants.BootstrapPeer)
+		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(listenPort+1000), peers)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		s := server.New(peer, forward)
 		s.ListenAndSync()
 
 		util.OSInterrupt()
@@ -84,6 +92,7 @@ var bothCmd = &cobra.Command{
 	Use:   "both",
 	Short: "Startup client and server peer.",
 	Run: func(cmd *cobra.Command, args []string) {
+		// client initialization
 		listen := client.ClientListen{
 			Addr: "127.0.0.1",
 			Port: listenPort,
@@ -98,14 +107,22 @@ var bothCmd = &cobra.Command{
 
 		c := client.New(peer, listen)
 
+		// server initialization
+		forward := server.ServerForward{
+			Addr: forwardAddress,
+			Port: forwardPort,
+		}
+		s := server.New(peer, forward)
+
+		// client and server launch
+
 		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
 			panic("Could not parse Destname")
 		}
-
 		c.ConnectAndSync(mesh.PeerName(destNameNum))
 
-		// TODO: need to implement Server side functionality (bothCmd of cmd.go)
+		s.ListenAndSync()
 
 		util.OSInterrupt()
 	},

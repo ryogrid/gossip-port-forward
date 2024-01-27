@@ -6,6 +6,7 @@ import (
 	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/weaveworks/mesh"
 	"log"
+	"math/rand"
 )
 
 type Relay struct {
@@ -15,10 +16,10 @@ type Relay struct {
 }
 
 func New(gossipPort uint16) *Relay {
-	host := "0.0.0.0"
+	//host := "0.0.0.0"
 	peers := &util.Stringset{}
 	peers.Set(constants.BootstrapPeer)
-	peer, err := overlay.NewOverlayPeer(&host, int(gossipPort), peers)
+	peer, err := overlay.NewOverlayPeer(uint64(rand.Int31n(10000)), int(gossipPort), peers)
 	if err != nil {
 		log.Fatalln(err)
 	}
