@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/ryogrid/gossip-overlay/overlay"
 	"github.com/weaveworks/mesh"
+	"io"
 	"log"
+	"math"
 	"net"
 
 	"github.com/ryogrid/gossip-port-forward/util"
@@ -44,11 +46,35 @@ func (c *Client) ConnectAndSync(targetPeerId mesh.PeerName) {
 	go func() {
 		for {
 			tcpConn, err2 := tcpLn.AcceptTCP()
+
+			// read remote node address at start of stream wrote by application
+
+			lenBuf := make([]byte, 1)
+			// read 1 byte
+			n, err3 := io.ReadFull(tcpConn, lenBuf)
+			if err3 != nil || n != 1 {
+				fmt.Println("DummyTCPListener::Accept failed (reading addres len)", err3)
+			}
+			addrStrLen := int(lenBuf[0])
+			addrBuf := make([]byte, addrStrLen)
+			// read addrStrLen bytes
+			n, err4 := io.ReadFull(tcpConn, addrBuf)
+			if err4 != nil || n != addrStrLen {
+				fmt.Println("DummyTCPListener::Accept failed (reading address)", err4)
+			}
+			remoteAddrStr := string(addrBuf)
+
+			targetPeerId_ := targetPeerId
+			if targetPeerId == math.MaxUint64 {
+				// destination peer can't be determinated at launch case (destination is not single peer)
+				targetPeerId_ = mesh.PeerName(uint64(util.GenHashIDUint16(remoteAddrStr)))
+			}
+
 			if err2 != nil {
 				log.Fatalln(err2)
 			}
 
-			stream := c.peer.OpenStreamToTargetPeer(targetPeerId, "")
+			stream := c.peer.OpenStreamToTargetPeer(targetPeerId_, remoteAddrStr)
 
 			go util.Sync(tcpConn, stream)
 		}
