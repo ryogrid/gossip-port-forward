@@ -8,8 +8,10 @@ import (
 	"github.com/ryogrid/gossip-port-forward/relay"
 	"github.com/weaveworks/mesh"
 	"log"
+	"math"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/ryogrid/gossip-port-forward/client"
 	"github.com/ryogrid/gossip-port-forward/server"
@@ -18,11 +20,13 @@ import (
 )
 
 var gossipPort uint16 = 9999
+
 var listenPort uint16
 var forwardPort uint16
 var forwardAddress string
 var connectTo string
-var selfPeerId uint16
+
+// var selfPeerId uint16
 
 var rootCmd = &cobra.Command{
 	Use: "gossip-port-forward",
@@ -47,7 +51,8 @@ var clientCmd = &cobra.Command{
 		//host := "0.0.0.0"
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
-		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(listenPort+1000), peers)
+		selfPeerId := uint64(time.Now().UnixNano())
+		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -76,12 +81,13 @@ var serverCmd = &cobra.Command{
 
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
-		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(listenPort+1000), peers)
+		selfPeerId := uint64(time.Now().UnixNano())
+		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		s := server.New(peer, forward)
+		s := server.New(peer, forward, false)
 		s.ListenAndSync()
 
 		util.OSInterrupt()
@@ -100,7 +106,9 @@ var bothCmd = &cobra.Command{
 
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
-		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(listenPort+1000), peers)
+		// proxy's ID on gossip network should match proxied application working address
+		selfPeerId := uint64(util.GenHashIDUint16("127.0.0.1:" + strconv.Itoa(int(forwardPort))))
+		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(forwardPort+2), peers, true)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -112,15 +120,15 @@ var bothCmd = &cobra.Command{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New(peer, forward)
+		s := server.New(peer, forward, true)
 
 		// client and server launch
 
-		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
-		if err != nil {
-			panic("Could not parse Destname")
-		}
-		c.ConnectAndSync(mesh.PeerName(destNameNum))
+		//destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
+		//if err != nil {
+		//	panic("Could not parse Destname")
+		//}
+		c.ConnectAndSync(math.MaxUint64)
 
 		s.ListenAndSync()
 
@@ -181,14 +189,14 @@ func init() {
 		"Address to forward",
 	)
 
-	bothCmd.Flags().Uint16VarP(
-		&selfPeerId,
-		"self-peer-id",
-		"s",
-		1,
-		"Peer ID of myself",
-	)
-	bothCmd.MarkFlagRequired("self-peer-id")
+	//bothCmd.Flags().Uint16VarP(
+	//	&selfPeerId,
+	//	"self-peer-id",
+	//	"s",
+	//	1,
+	//	"Peer ID of myself",
+	//)
+	//bothCmd.MarkFlagRequired("self-peer-id")
 	bothCmd.Flags().AddFlagSet(clientCmd.Flags())
 	bothCmd.Flags().AddFlagSet(serverCmd.Flags())
 

@@ -60,9 +60,7 @@ Flags:
   -h, --help                     help for both
   -a, --forward-address string   Address to forward (default "localhost")  
   -l, --listen-port uint16       Listen server port (default 2222)
-  -f, --forward-port uint16      Port to forward (default 22)
-  -c, --connect-to string        PeerId of the destination peer (required)
-  -s, --self-peer-id string      PeerId of the self peer (required)  
+  -f, --forward-port uint16      Port to forward (default 22) 
 ```
 
 ### Relay

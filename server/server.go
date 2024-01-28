@@ -15,13 +15,14 @@ type ServerForward struct {
 }
 
 type Server struct {
-	peer    *overlay.OverlayPeer
-	forward ServerForward
-	ID      mesh.PeerName
+	peer       *overlay.OverlayPeer
+	forward    ServerForward
+	ID         mesh.PeerName
+	isUseProxy bool
 }
 
-func New(peer *overlay.OverlayPeer, forward ServerForward) *Server {
-	return &Server{peer, forward, peer.Peer.GossipDataMan.Self}
+func New(peer *overlay.OverlayPeer, forward ServerForward, isUseProxy bool) *Server {
+	return &Server{peer, forward, peer.Peer.GossipDataMan.Self, isUseProxy}
 }
 
 func (s *Server) ListenAndSync() {
@@ -38,11 +39,21 @@ func (s *Server) ListenAndSync() {
 		}
 
 		for {
-			channel, remotePeerName, streamID, err2 := oserv.Accept()
+			channel, remotePeerName, remotePeerHost, streamID, err2 := oserv.Accept()
 			if err2 != nil {
 				panic(err2)
 			}
-			fmt.Println("accepted:", remotePeerName, streamID)
+			fmt.Println("accepted:", remotePeerName, remotePeerHost, streamID)
+
+			if s.isUseProxy {
+				// notify remote node addr for proxied application at first
+				remotePeerHostData := []byte(*remotePeerHost)
+				remotePeerHostByteNum := len(remotePeerHostData)
+				// write address length on bytes
+				channel.Write([]byte{byte(remotePeerHostByteNum)})
+				// write remote address
+				channel.Write(remotePeerHostData)
+			}
 
 			go func(channel_ *overlay.OverlayStream) {
 				log.Println("Got a new stream!")
