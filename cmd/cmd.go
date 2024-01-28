@@ -170,9 +170,9 @@ func init() {
 		"connect-to",
 		"c",
 		"",
-		"PeerId of the server gossip peer",
+		"PeerId of the server gossip peer (required for client mode)",
 	)
-	clientCmd.MarkFlagRequired("connect-to")
+	//clientCmd.MarkFlagRequired("connect-to")
 
 	serverCmd.Flags().Uint16VarP(
 		&forwardPort,

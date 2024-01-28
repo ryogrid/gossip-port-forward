@@ -45,16 +45,6 @@ func (s *Server) ListenAndSync() {
 			}
 			fmt.Println("accepted:", remotePeerName, remotePeerHost, streamID)
 
-			if s.isUseProxy {
-				// notify remote node addr for proxied application at first
-				remotePeerHostData := []byte(*remotePeerHost)
-				remotePeerHostByteNum := len(remotePeerHostData)
-				// write address length on bytes
-				channel.Write([]byte{byte(remotePeerHostByteNum)})
-				// write remote address
-				channel.Write(remotePeerHostData)
-			}
-
 			go func(channel_ *overlay.OverlayStream) {
 				log.Println("Got a new stream!")
 
@@ -63,6 +53,16 @@ func (s *Server) ListenAndSync() {
 				tcpConn, err3 := s.dialForwardServer()
 				if err3 != nil {
 					log.Fatalln(err3)
+				}
+
+				if s.isUseProxy {
+					// notify remote node addr for proxied application at first
+					remotePeerHostData := []byte(*remotePeerHost)
+					remotePeerHostByteNum := len(remotePeerHostData)
+					// write address length on bytes
+					tcpConn.Write([]byte{byte(remotePeerHostByteNum)})
+					// write remote address
+					tcpConn.Write(remotePeerHostData)
 				}
 
 				log.Println("Connected forward server.")
