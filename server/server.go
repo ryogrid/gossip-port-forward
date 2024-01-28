@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"github.com/ryogrid/gossip-overlay/overlay"
-	"github.com/ryogrid/gossip-port-forward/gossip-overlay"
 	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/weaveworks/mesh"
 	"log"
@@ -16,46 +15,35 @@ type ServerForward struct {
 }
 
 type Server struct {
-	node    *gossip_overlay.Node
-	forward ServerForward
-	ID      mesh.PeerName
+	peer       *overlay.OverlayPeer
+	forward    ServerForward
+	ID         mesh.PeerName
+	isUseProxy bool
 }
 
-func New(forward ServerForward, gossipListenPort uint16) *Server {
-	node, err := gossip_overlay.NewNode(nil, gossipListenPort)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return &Server{node, forward, node.Peer.GossipDataMan.Self}
+func New(peer *overlay.OverlayPeer, forward ServerForward, isUseProxy bool) *Server {
+	return &Server{peer, forward, peer.Peer.GossipDataMan.Self, isUseProxy}
 }
 
 func (s *Server) ListenAndSync() {
 	defer func() {
-		gossip_overlay.LoggerObj.Printf("mesh router stopping")
-		s.node.Peer.Router.Stop()
+		fmt.Println("mesh router stopping")
+		//s.peer.Peer.Router.Stop()
+		s.peer.Peer.Stop()
 	}()
 
-	//errs := make(chan error)
-	//
-	//go func() {
-	//	c := make(chan os.Signal)
-	//	signal.Notify(c, syscall.SIGINT)
-	//	errs <- fmt.Errorf("%s", <-c)
-	//}()
-
 	go func() {
-		oserv, err := overlay.NewOverlayServer(s.node.Peer, s.node.Peer.GossipMM)
+		oserv, err := overlay.NewOverlayServer(s.peer.Peer, s.peer.Peer.GossipMM)
 		if err != nil {
 			panic(err)
 		}
 
 		for {
-			channel, remotePeerName, streamID, err2 := oserv.Accept()
+			channel, remotePeerName, remotePeerHost, streamID, err2 := oserv.Accept()
 			if err2 != nil {
 				panic(err2)
 			}
-			fmt.Println("accepted:", remotePeerName, streamID)
+			fmt.Println("accepted:", remotePeerName, remotePeerHost, streamID)
 
 			go func(channel_ *overlay.OverlayStream) {
 				log.Println("Got a new stream!")
@@ -65,6 +53,16 @@ func (s *Server) ListenAndSync() {
 				tcpConn, err3 := s.dialForwardServer()
 				if err3 != nil {
 					log.Fatalln(err3)
+				}
+
+				if s.isUseProxy {
+					// notify remote node addr for proxied application at first
+					remotePeerHostData := []byte(*remotePeerHost)
+					remotePeerHostByteNum := len(remotePeerHostData)
+					// write address length on bytes
+					tcpConn.Write([]byte{byte(remotePeerHostByteNum)})
+					// write remote address
+					tcpConn.Write(remotePeerHostData)
 				}
 
 				log.Println("Connected forward server.")

@@ -2,10 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ryogrid/gossip-overlay/overlay"
+	util2 "github.com/ryogrid/gossip-overlay/util"
+	"github.com/ryogrid/gossip-port-forward/constants"
 	"github.com/ryogrid/gossip-port-forward/relay"
 	"github.com/weaveworks/mesh"
+	"log"
+	"math"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/ryogrid/gossip-port-forward/client"
 	"github.com/ryogrid/gossip-port-forward/server"
@@ -14,10 +20,13 @@ import (
 )
 
 var gossipPort uint16 = 9999
+
 var listenPort uint16
 var forwardPort uint16
 var forwardAddress string
 var connectTo string
+
+// var selfPeerId uint16
 
 var rootCmd = &cobra.Command{
 	Use: "gossip-port-forward",
@@ -35,11 +44,20 @@ var clientCmd = &cobra.Command{
 			Port: listenPort,
 		}
 
-		destPeerId, err := strconv.ParseUint(connectTo, 10, 64) //Atoi(connectTo)
+		//destPeerId, err := strconv.ParseUint(connectTo, 10, 64) //Atoi(connectTo)
+		//if err != nil {
+		//	panic("Could not parse connect-to")
+		//}
+		//host := "0.0.0.0"
+		peers := &util2.Stringset{}
+		peers.Set(constants.BootstrapPeer)
+		selfPeerId := uint64(time.Now().UnixNano())
+		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
 		if err != nil {
-			panic("Could not parse connect-to")
+			log.Fatalln(err)
 		}
-		c := client.New(destPeerId, listen, gossipPort-1)
+
+		c := client.New(peer, listen)
 
 		destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
 		if err != nil {
@@ -54,13 +72,64 @@ var clientCmd = &cobra.Command{
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "Startup server node.",
+	Short: "Startup server peer.",
 	Run: func(cmd *cobra.Command, args []string) {
 		forward := server.ServerForward{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New(forward, gossipPort)
+
+		peers := &util2.Stringset{}
+		peers.Set(constants.BootstrapPeer)
+		selfPeerId := uint64(time.Now().UnixNano())
+		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		s := server.New(peer, forward, false)
+		s.ListenAndSync()
+
+		util.OSInterrupt()
+	},
+}
+
+var bothCmd = &cobra.Command{
+	Use:   "both",
+	Short: "Startup client and server peer.",
+	Run: func(cmd *cobra.Command, args []string) {
+		// client initialization
+		listen := client.ClientListen{
+			Addr: "127.0.0.1",
+			Port: listenPort,
+		}
+
+		peers := &util2.Stringset{}
+		peers.Set(constants.BootstrapPeer)
+		// proxy's ID on gossip network should match proxied application working address
+		selfPeerId := uint64(util.GenHashIDUint16("127.0.0.1:" + strconv.Itoa(int(forwardPort))))
+		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(forwardPort+2), peers, true)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		c := client.New(peer, listen)
+
+		// server initialization
+		forward := server.ServerForward{
+			Addr: forwardAddress,
+			Port: forwardPort,
+		}
+		s := server.New(peer, forward, true)
+
+		// client and server launch
+
+		//destNameNum, err := strconv.ParseUint(connectTo, 10, 64)
+		//if err != nil {
+		//	panic("Could not parse Destname")
+		//}
+		c.ConnectAndSync(math.MaxUint64)
+
 		s.ListenAndSync()
 
 		util.OSInterrupt()
@@ -101,9 +170,9 @@ func init() {
 		"connect-to",
 		"c",
 		"",
-		"PeerId of the server gossip peer",
+		"PeerId of the server gossip peer (required for client mode)",
 	)
-	clientCmd.MarkFlagRequired("connect-to")
+	//clientCmd.MarkFlagRequired("connect-to")
 
 	serverCmd.Flags().Uint16VarP(
 		&forwardPort,
@@ -120,6 +189,17 @@ func init() {
 		"Address to forward",
 	)
 
+	//bothCmd.Flags().Uint16VarP(
+	//	&selfPeerId,
+	//	"self-peer-id",
+	//	"s",
+	//	1,
+	//	"Peer ID of myself",
+	//)
+	//bothCmd.MarkFlagRequired("self-peer-id")
+	bothCmd.Flags().AddFlagSet(clientCmd.Flags())
+	bothCmd.Flags().AddFlagSet(serverCmd.Flags())
+
 	relayCmd.Flags().Uint16VarP(
 		&gossipPort,
 		"gossip-port",
@@ -130,5 +210,6 @@ func init() {
 
 	rootCmd.AddCommand(clientCmd)
 	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(bothCmd)
 	rootCmd.AddCommand(relayCmd)
 }
