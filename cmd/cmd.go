@@ -52,7 +52,8 @@ var clientCmd = &cobra.Command{
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
 		selfPeerId := uint64(time.Now().UnixNano())
-		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
+		gossipPeerHost := "127.0.0.1"
+		peer, err := overlay.NewOverlayPeer(selfPeerId, &gossipPeerHost, int(listenPort+1000), peers, false)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -82,7 +83,7 @@ var serverCmd = &cobra.Command{
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
 		selfPeerId := uint64(time.Now().UnixNano())
-		peer, err := overlay.NewOverlayPeer(selfPeerId, int(listenPort+1000), peers, false)
+		peer, err := overlay.NewOverlayPeer(selfPeerId, &forwardAddress, int(listenPort+1000), peers, false)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -100,15 +101,15 @@ var bothCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// client initialization
 		listen := client.ClientListen{
-			Addr: "127.0.0.1",
+			Addr: forwardAddress,
 			Port: listenPort,
 		}
 
 		peers := &util2.Stringset{}
 		peers.Set(constants.BootstrapPeer)
 		// proxy's ID on gossip network should match proxied application working address
-		selfPeerId := uint64(util.GenHashIDUint16("127.0.0.1:" + strconv.Itoa(int(forwardPort))))
-		peer, err := overlay.NewOverlayPeer(uint64(selfPeerId), int(forwardPort+2), peers, true)
+		selfPeerId := uint64(util.GenHashIDUint16(forwardAddress + ":" + strconv.Itoa(int(forwardPort))))
+		peer, err := overlay.NewOverlayPeer(selfPeerId, &forwardAddress, int(forwardPort+2), peers, true)
 		if err != nil {
 			log.Fatalln(err)
 		}
