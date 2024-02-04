@@ -8,9 +8,9 @@ import (
 
 	network2 "github.com/libp2p/go-libp2p/core/network"
 	peer2 "github.com/libp2p/go-libp2p/core/peer"
-	"github.com/studiokaiji/libp2p-port-forward/constants"
-	"github.com/studiokaiji/libp2p-port-forward/libp2p"
-	"github.com/studiokaiji/libp2p-port-forward/util"
+	"github.com/ryogrid/gossip-port-forward/constants"
+	"github.com/ryogrid/gossip-port-forward/libp2p"
+	"github.com/ryogrid/gossip-port-forward/util"
 )
 
 type ServerForward struct {

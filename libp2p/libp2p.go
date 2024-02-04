@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 
 	"github.com/libp2p/go-libp2p/core/host"
@@ -63,7 +64,10 @@ func (n *Node) Advertise(ctx context.Context) {
 
 func (n *Node) AdvertiseForRelay(ctx context.Context) {
 	routing := n.newRoutingForRelay(ctx)
-	discovery.Advertise(ctx, routing, n.ID().Pretty())
+	var advOption discovery2.Option = func(opts *discovery2.Options) error {
+		return opts.Apply(discovery2.TTL(time.Duration(60 * time.Second)))
+	}
+	routing.Advertise(ctx, n.Host.ID().String(), advOption)
 }
 
 func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
@@ -83,7 +87,7 @@ func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
 }
 
 func (n *Node) newRoutingForRelay(ctx context.Context) *discovery.RoutingDiscovery {
-	kademliaDHT, err := dht.New(ctx, n)
+	kademliaDHT, err := dht.New(ctx, n.Host)
 	if err != nil {
 		log.Fatalln(err)
 	}

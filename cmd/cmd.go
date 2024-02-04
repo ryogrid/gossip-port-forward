@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	peer2 "github.com/libp2p/go-libp2p/core/peer"
+	"github.com/ryogrid/gossip-port-forward/client"
+	"github.com/ryogrid/gossip-port-forward/server"
+	"github.com/ryogrid/gossip-port-forward/util"
 	"log"
 	"os"
 
@@ -67,13 +70,13 @@ var relayCmd = &cobra.Command{
 	Use:   "relay",
 	Short: "Startup relay node.",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
+		//ctx := context.Background()
 
 		forward := server.ServerForward{
 			Addr: forwardAddress,
 			Port: forwardPort,
 		}
-		s := server.New(ctx, "0.0.0.0", libp2pPort, forward)
+		s := server.New("0.0.0.0", libp2pPort, forward)
 		s.ListenAndSyncForRelay()
 
 		util.OSInterrupt()

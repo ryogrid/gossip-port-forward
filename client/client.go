@@ -7,15 +7,8 @@ import (
 	"log"
 	"net"
 
-<<<<<<< HEAD
-	"github.com/libp2p/go-libp2p-core/peer"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/ryogrid/gossip-port-forward/libp2p"
 	"github.com/ryogrid/gossip-port-forward/util"
-=======
-	"github.com/studiokaiji/libp2p-port-forward/libp2p"
-	"github.com/studiokaiji/libp2p-port-forward/util"
->>>>>>> for-rebase
 )
 
 type ClientListen struct {
