@@ -7,10 +7,10 @@ import (
 	"os"
 
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/ryogrid/gossip-port-forward/client"
+	"github.com/ryogrid/gossip-port-forward/server"
+	"github.com/ryogrid/gossip-port-forward/util"
 	"github.com/spf13/cobra"
-	"github.com/studiokaiji/libp2p-port-forward/client"
-	"github.com/studiokaiji/libp2p-port-forward/server"
-	"github.com/studiokaiji/libp2p-port-forward/util"
 )
 
 var libp2pPort uint16
@@ -20,9 +20,9 @@ var forwardAddress string
 var connectTo string
 
 var rootCmd = &cobra.Command{
-	Use: "libp2p-port-forward",
+	Use: "gossip-port-forward",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("libp2p-port-forward v0.1.0")
+		fmt.Println("gossip-port-forward v0.1.0")
 	},
 }
 
@@ -62,6 +62,23 @@ var serverCmd = &cobra.Command{
 		}
 		s := server.New(ctx, "0.0.0.0", libp2pPort, forward)
 		s.ListenAndSync()
+
+		util.OSInterrupt()
+	},
+}
+
+var relayCmd = &cobra.Command{
+	Use:   "relay",
+	Short: "Startup relay node.",
+	Run: func(cmd *cobra.Command, args []string) {
+		ctx := context.Background()
+
+		forward := server.ServerForward{
+			Addr: forwardAddress,
+			Port: forwardPort,
+		}
+		s := server.New(ctx, "0.0.0.0", libp2pPort, forward)
+		s.ListenAndSyncForRelay()
 
 		util.OSInterrupt()
 	},
@@ -122,6 +139,15 @@ func init() {
 		"Address to forward",
 	)
 
+	relayCmd.Flags().Uint16VarP(
+		&libp2pPort,
+		"libp2p-port",
+		"p",
+		60001,
+		"Libp2p server node port",
+	)
+
 	rootCmd.AddCommand(clientCmd)
 	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(relayCmd)
 }

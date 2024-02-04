@@ -9,9 +9,9 @@ import (
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
-	"github.com/studiokaiji/libp2p-port-forward/constants"
-	"github.com/studiokaiji/libp2p-port-forward/libp2p"
-	"github.com/studiokaiji/libp2p-port-forward/util"
+	"github.com/ryogrid/gossip-port-forward/constants"
+	"github.com/ryogrid/gossip-port-forward/libp2p"
+	"github.com/ryogrid/gossip-port-forward/util"
 )
 
 type ServerForward struct {
@@ -58,6 +58,29 @@ func (s *Server) ListenAndSync() {
 	})
 
 	log.Println("Waiting for client to connect.\nYour PeerId is", s.ID.Pretty())
+}
+
+func (s *Server) ListenAndSyncForRelay() {
+	ctx := context.Background()
+
+	s.node.AdvertiseForRelay(ctx)
+	fmt.Println("Successfully finished AdvertiseForRelay method call.")
+
+	//s.node.SetStreamHandler(constants.Protocol, func(stream network.Stream) {
+	//	log.Println("Got a new stream!")
+	//
+	//	log.Println("Connecting forward server...")
+	//
+	//	tcpConn, err := s.dialForwardServer()
+	//	if err != nil {
+	//		log.Fatalln(err)
+	//	}
+	//
+	//	log.Println("Connected forward server.")
+	//	go util.Sync(tcpConn, stream)
+	//})
+
+	log.Println("Waiting other peers to connect.\nYour PeerId is", s.ID.Pretty())
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {

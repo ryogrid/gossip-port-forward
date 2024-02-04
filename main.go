@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/studiokaiji/libp2p-port-forward/cmd"
+	"github.com/ryogrid/gossip-port-forward/cmd"
 )
 
 func main() {

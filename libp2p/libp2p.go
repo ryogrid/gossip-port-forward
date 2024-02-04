@@ -12,7 +12,7 @@ import (
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	host "github.com/libp2p/go-libp2p-host"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
-	"github.com/studiokaiji/libp2p-port-forward/constants"
+	"github.com/ryogrid/gossip-port-forward/constants"
 )
 
 type Node struct {
@@ -46,6 +46,11 @@ func (n *Node) Advertise(ctx context.Context) {
 	discovery.Advertise(ctx, routing, n.ID().Pretty())
 }
 
+func (n *Node) AdvertiseForRelay(ctx context.Context) {
+	routing := n.newRoutingForRelay(ctx)
+	discovery.Advertise(ctx, routing, n.ID().Pretty())
+}
+
 func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
 	kademliaDHT, err := dht.New(ctx, n)
 	if err != nil {
@@ -59,6 +64,23 @@ func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
 	}
 
 	n.connectToBootstapPeers(ctx)
+
+	return discovery.NewRoutingDiscovery(kademliaDHT)
+}
+
+func (n *Node) newRoutingForRelay(ctx context.Context) *discovery.RoutingDiscovery {
+	kademliaDHT, err := dht.New(ctx, n)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	log.Println("Bootstrapping the DHT...")
+
+	if err = kademliaDHT.Bootstrap(ctx); err != nil {
+		log.Fatalln(err)
+	}
+
+	//n.connectToBootstapPeers(ctx)
 
 	return discovery.NewRoutingDiscovery(kademliaDHT)
 }
