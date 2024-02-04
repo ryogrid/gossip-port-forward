@@ -6,12 +6,11 @@ import (
 	"log"
 	"net"
 
-	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
-	"github.com/ryogrid/gossip-port-forward/constants"
-	"github.com/ryogrid/gossip-port-forward/libp2p"
-	"github.com/ryogrid/gossip-port-forward/util"
+	network2 "github.com/libp2p/go-libp2p/core/network"
+	peer2 "github.com/libp2p/go-libp2p/core/peer"
+	"github.com/studiokaiji/libp2p-port-forward/constants"
+	"github.com/studiokaiji/libp2p-port-forward/libp2p"
+	"github.com/studiokaiji/libp2p-port-forward/util"
 )
 
 type ServerForward struct {
@@ -22,18 +21,16 @@ type ServerForward struct {
 type Server struct {
 	node    libp2p.Node
 	forward ServerForward
-	ID      peer.ID
+	ID      peer2.ID
 }
 
-var idht *dht.IpfsDHT
-
-func New(ctx context.Context, addr string, port uint16, forward ServerForward) *Server {
-	node, err := libp2p.New(ctx, addr, port)
+func New(addr string, port uint16, forward ServerForward) *Server {
+	node, err := libp2p.New(addr, port)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return &Server{node, forward, node.ID()}
+	return &Server{node, forward, node.Host.ID()}
 }
 
 func (s *Server) ListenAndSync() {
@@ -43,7 +40,7 @@ func (s *Server) ListenAndSync() {
 	s.node.Advertise(ctx)
 	log.Println("Successfully announced.")
 
-	s.node.SetStreamHandler(constants.Protocol, func(stream network.Stream) {
+	s.node.Host.SetStreamHandler(constants.Protocol, func(stream network2.Stream) {
 		log.Println("Got a new stream!")
 
 		log.Println("Connecting forward server...")
