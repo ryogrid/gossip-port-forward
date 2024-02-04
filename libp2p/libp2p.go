@@ -3,6 +3,7 @@ package libp2p
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-datastore"
 	discovery2 "github.com/libp2p/go-libp2p/core/discovery"
 	peer2 "github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoremem"
@@ -62,12 +63,13 @@ func (n *Node) Advertise(ctx context.Context) {
 	routing.Advertise(ctx, n.Host.ID().String(), advOption)
 }
 
-func (n *Node) AdvertiseForRelay(ctx context.Context) {
-	routing := n.newRoutingForRelay(ctx)
+func (n *Node) AdvertiseForRelay(ctx context.Context) *dht.IpfsDHT {
+	routing, dht := n.newRoutingForRelay(ctx)
 	var advOption discovery2.Option = func(opts *discovery2.Options) error {
 		return opts.Apply(discovery2.TTL(time.Duration(60 * time.Second)))
 	}
 	routing.Advertise(ctx, n.Host.ID().String(), advOption)
+	return dht
 }
 
 func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
@@ -86,21 +88,23 @@ func (n *Node) newRouting(ctx context.Context) *discovery.RoutingDiscovery {
 	return discovery.NewRoutingDiscovery(kademliaDHT)
 }
 
-func (n *Node) newRoutingForRelay(ctx context.Context) *discovery.RoutingDiscovery {
-	kademliaDHT, err := dht.New(ctx, n.Host)
-	if err != nil {
-		log.Fatalln(err)
-	}
+func (n *Node) newRoutingForRelay(ctx context.Context) (*discovery.RoutingDiscovery, *dht.IpfsDHT) {
+	ds := datastore.NewMapDatastore()
+	batching := datastore.NewLogDatastore(ds, "default")
+	kademliaDHT := dht.NewDHT(ctx, n.Host, batching)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 
 	log.Println("Bootstrapping the DHT...")
 
-	if err = kademliaDHT.Bootstrap(ctx); err != nil {
+	if err := kademliaDHT.Bootstrap(ctx); err != nil {
 		log.Fatalln(err)
 	}
 
 	//n.connectToBootstapPeers(ctx)
 
-	return discovery.NewRoutingDiscovery(kademliaDHT)
+	return discovery.NewRoutingDiscovery(kademliaDHT), kademliaDHT
 }
 
 func (n *Node) connectToBootstapPeers(ctx context.Context) {

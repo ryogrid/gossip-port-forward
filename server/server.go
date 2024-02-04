@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	network2 "github.com/libp2p/go-libp2p/core/network"
 	peer2 "github.com/libp2p/go-libp2p/core/peer"
@@ -60,9 +61,15 @@ func (s *Server) ListenAndSync() {
 func (s *Server) ListenAndSyncForRelay() {
 	ctx := context.Background()
 
-	s.node.AdvertiseForRelay(ctx)
+	dht := s.node.AdvertiseForRelay(ctx)
 	fmt.Println("Successfully finished AdvertiseForRelay method call.")
+	log.Println("Waiting other peers to connect.\nYour PeerId is", s.ID.Pretty())
 
+	for {
+		finCh := dht.ForceRefresh()
+		<-finCh
+		time.Sleep(500 * time.Millisecond)
+	}
 	//s.node.SetStreamHandler(constants.Protocol, func(stream network.Stream) {
 	//	log.Println("Got a new stream!")
 	//
@@ -77,7 +84,6 @@ func (s *Server) ListenAndSyncForRelay() {
 	//	go util.Sync(tcpConn, stream)
 	//})
 
-	log.Println("Waiting other peers to connect.\nYour PeerId is", s.ID.Pretty())
 }
 
 func (s *Server) dialForwardServer() (*net.TCPConn, error) {

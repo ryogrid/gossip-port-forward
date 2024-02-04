@@ -8,7 +8,7 @@ var BootstrapPeers = [1]multiaddr.Multiaddr{
 	//multiaddr.StringCast("/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb"),
 	//multiaddr.StringCast("/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt"),
 	//multiaddr.StringCast("/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"),
-	multiaddr.StringCast("/ip4/127.0.0.1/tcp/20001/p2p/12D3KooWPDLhF26sFk7KK1EqjLbFDZbH1SkSwkqnLAzdNqh1eDXZ"),
+	multiaddr.StringCast("/ip4/127.0.0.1/tcp/20001/p2p/12D3KooWKtQckkYvJKU5os2pm9LCS9Z4tCGZcqKHYPPtRHqR7qVn"),
 }
 
 const Protocol = "/gossip-port-forward/v0"
